@@ -1,6 +1,7 @@
 #include "main.h"
 #include "lemlib/api.hpp"
 #include "lemlib/chassis/trackingWheel.hpp"
+#include "pros/misc.h"
 #include "pros/motors.h"
 /**
  * A callback function for LLEMU's center button.
@@ -166,21 +167,21 @@ void autonomous() {}
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
+
+
+pros::Controller controller(pros::E_CONTROLLER_MASTER);
+
 void opcontrol() {
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor left_mtr(1);
-	pros::Motor right_mtr(2);
+    // loop forever
+    while (true) {
+        // get left y and right x positions
+        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-	while (true) {
-		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
-		int left = master.get_analog(ANALOG_LEFT_Y);
-		int right = master.get_analog(ANALOG_RIGHT_Y);
+        // move the robot
+        chassis.arcade(leftY, rightX, false, 0.5);
 
-		left_mtr = left;
-		right_mtr = right;
-
-		pros::delay(20);
-	}
+        // delay to save resources
+        pros::delay(25);
+    }
 }
